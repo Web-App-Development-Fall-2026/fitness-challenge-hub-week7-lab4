@@ -5,13 +5,18 @@ import com.example.FitnessChallengeApp_Test.model.WorkoutLog;
 import com.example.FitnessChallengeApp_Test.service.ChallengeService;
 import com.example.FitnessChallengeApp_Test.service.WorkoutLogService;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 /**
  * Controller for Athlete Workout Logging.
  * Handles workout form rendering, @ManyToOne Challenge binding, Bean Validation,
@@ -68,9 +73,83 @@ public class WorkoutLogController {
     }
 
     @GetMapping("/workout-logs")
-    public String showWorkoutLogs(Model model) {
-        model.addAttribute("workoutLogs", workoutLogService.getAllLogs());
-        model.addAttribute("pageTitle", "FitSquad Hub - Community Workout Logs");
+    public String showWorkoutLogs(
+    		@RequestParam(defaultValue = "0") int page,
+    		@RequestParam(defaultValue = "5") int size,
+    		@RequestParam(defaultValue = "id") String sort,
+    		@RequestParam(defaultValue = "DESC") String direction,
+    		@RequestParam(required = false) String search,
+    		@RequestParam(defaultValue = "all") String filterType,
+    		Model model) {
+    	
+    	page = Math.max(0, page);
+    	size = Math.max(1, Math.min(size,100));
+    	
+    	java.util.List<String> allowedSortFields = java.util.List.of(
+    			"id","athleteName", "workoutDate","durationMinutes","caloriesBurned","intensityLevel"
+    			);
+    	if(!allowedSortFields.contains(sort)) {
+    		sort = "id";
+    	}
+    	Sort.Direction sortDirection = "ASC".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+    	direction = sortDirection.name();
+    	
+    	Pageable pageable = PageRequest.of(page, size,Sort.by(sortDirection,sort));
+    	Page<WorkoutLog> logPage;
+    	String searchValue = search == null ? "" : search.trim();
+    	
+    	switch (filterType) {
+	    	case "athlete":
+	            logPage = workoutLogService
+	                    .findByAthleteNameContainingIgnoreCase(
+	                            searchValue, pageable);
+	            break;
+	
+	        case "calories":
+	            int minCalories;
+	
+	            try {
+	                minCalories = Integer.parseInt(searchValue);
+	            } catch (NumberFormatException e) {
+	                minCalories = 200;
+	            }
+	
+	            logPage = workoutLogService
+	                    .findByCaloriesBurnedGreaterThanEqual(
+	                            minCalories, pageable);
+	            break;
+	
+	        case "highestCalories":
+	            logPage = workoutLogService
+	                    .findHighestCalorieLogs(pageable);
+	            break;
+	
+	        case "intensityDuration":
+	            logPage = workoutLogService
+	                    .findLogsByIntensityAndMinDuration(
+	                            searchValue, 25, pageable);
+	            break;
+	
+	        default:
+	            filterType = "all";
+	            logPage = workoutLogService.getLogs(pageable);
+	            break;
+    	}
+	    	model.addAttribute("workoutLogs", logPage.getContent());
+	        model.addAttribute("totalPages", logPage.getTotalPages());
+	        model.addAttribute("totalElements", logPage.getTotalElements());
+	        model.addAttribute("currentPage", logPage.getNumber());
+	        model.addAttribute("pageSize", size);
+	        model.addAttribute("hasPrevious", logPage.hasPrevious());
+	        model.addAttribute("hasNext", logPage.hasNext());
+	        model.addAttribute("search", searchValue);
+	        model.addAttribute("sort", sort);
+	        model.addAttribute("direction", direction);
+	        model.addAttribute("filterType", filterType);
+	        model.addAttribute(
+	                "pageTitle",
+	                "FitSquad Hub - Community Workout Logs"
+	        );
         return "workout-logs";
     }
 }
