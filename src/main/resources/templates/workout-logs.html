@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -48,11 +49,50 @@
             </div>
         </div>
 
+        <!-- Search and Filter Form -->
+        <form th:action="@{/workout-logs}" method="get" class="form-card p-3 mb-4">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+            <input type="hidden" name="size" th:value="${pageSize}">
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="search" class="form-label text-light">Search Workout Logs</label>
+                    <input type="text"
+                           class="form-control"
+                           id="search"
+                           name="search"
+                           th:value="${search}"
+                           placeholder="Enter athlete name, calories, or intensity...">
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filterType" class="form-label text-light">Filter By</label>
+                    <select class="form-select" id="filterType" name="filterType">
+                        <option value="all" th:selected="${filterType == 'all'}">All Workout Logs</option>
+                        <option value="athlete" th:selected="${filterType == 'athlete'}">By Athlete Name</option>
+                        <option value="calories" th:selected="${filterType == 'calories'}">By Min Calories Burned</option>
+                        <option value="highestCalories" th:selected="${filterType == 'highestCalories'}">Highest Calorie Burn - JPQL</option>
+                        <option value="intensityDuration" th:selected="${filterType == 'intensityDuration'}">By Intensity &amp; Min 25m Duration - JPQL</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-join rounded-pill px-4">
+                        <i class="bi bi-search me-1"></i> Search
+                    </button>
+                    <a th:href="@{/workout-logs}" class="btn btn-outline-secondary rounded-pill px-3">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+
         <!-- Empty State Defense -->
         <div th:if="${#lists.isEmpty(workoutLogs)}" class="alert alert-dark text-center py-5 rounded-4 border-secondary">
             <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
-            <h4 class="text-white">No Workouts Logged Yet</h4>
-            <p class="text-secondary">Be the first squad member to complete a quest and log your training session!</p>
+            <h4 class="text-white">No Workouts Found</h4>
+            <p class="text-secondary">No workout logs match your search. Try another filter or log a new workout!</p>
             <a th:href="@{/log-workout}" class="btn btn-join rounded-pill px-4 mt-2">Log First Workout</a>
         </div>
 
@@ -62,12 +102,42 @@
                 <table class="table table-dark table-hover align-middle mb-0">
                     <thead class="border-bottom border-secondary">
                         <tr class="text-secondary small text-uppercase">
-                            <th scope="col" class="ps-4 py-3">Athlete</th>
+                            <th scope="col" class="ps-4 py-3">
+                                <a class="text-secondary text-decoration-none"
+                                   th:href="@{/workout-logs(page=0, size=${pageSize}, sort='athleteName', direction=${sort == 'athleteName' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}">
+                                    Athlete
+                                    <span th:if="${sort == 'athleteName'}" th:text="${direction == 'ASC' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
                             <th scope="col" class="py-3">Challenge (@ManyToOne)</th>
-                            <th scope="col" class="py-3">Date</th>
-                            <th scope="col" class="py-3">Duration</th>
-                            <th scope="col" class="py-3">Calories</th>
-                            <th scope="col" class="py-3">Intensity</th>
+                            <th scope="col" class="py-3">
+                                <a class="text-secondary text-decoration-none"
+                                   th:href="@{/workout-logs(page=0, size=${pageSize}, sort='workoutDate', direction=${sort == 'workoutDate' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}">
+                                    Date
+                                    <span th:if="${sort == 'workoutDate'}" th:text="${direction == 'ASC' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
+                            <th scope="col" class="py-3">
+                                <a class="text-secondary text-decoration-none"
+                                   th:href="@{/workout-logs(page=0, size=${pageSize}, sort='durationMinutes', direction=${sort == 'durationMinutes' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}">
+                                    Duration
+                                    <span th:if="${sort == 'durationMinutes'}" th:text="${direction == 'ASC' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
+                            <th scope="col" class="py-3">
+                                <a class="text-secondary text-decoration-none"
+                                   th:href="@{/workout-logs(page=0, size=${pageSize}, sort='caloriesBurned', direction=${sort == 'caloriesBurned' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}">
+                                    Calories
+                                    <span th:if="${sort == 'caloriesBurned'}" th:text="${direction == 'ASC' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
+                            <th scope="col" class="py-3">
+                                <a class="text-secondary text-decoration-none"
+                                   th:href="@{/workout-logs(page=0, size=${pageSize}, sort='intensityLevel', direction=${sort == 'intensityLevel' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}">
+                                    Intensity
+                                    <span th:if="${sort == 'intensityLevel'}" th:text="${direction == 'ASC' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
                             <th scope="col" class="pe-4 py-3">Session Notes</th>
                         </tr>
                     </thead>
@@ -107,6 +177,65 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination Footer -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top border-secondary">
+
+                <div class="text-secondary small">
+                    Page <span th:text="${currentPage + 1}">1</span>
+                    of <span th:text="${totalPages}">1</span>
+                    (<span th:text="${totalElements}">0</span> total workout logs)
+                </div>
+
+                <nav th:if="${totalPages > 0}" aria-label="Workout log pagination">
+                    <ul class="pagination pagination-sm mb-0">
+
+                        <!-- First -->
+                        <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=0, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}">
+                                First
+                            </a>
+                        </li>
+
+                        <!-- Previous -->
+                        <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${currentPage - 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}">
+                                Previous
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers -->
+                        <li class="page-item"
+                            th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${pageNum == currentPage ? 'active' : ''}">
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${pageNum}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               th:text="${pageNum + 1}">
+                                1
+                            </a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${currentPage + 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}">
+                                Next
+                            </a>
+                        </li>
+
+                        <!-- Last -->
+                        <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${totalPages - 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}">
+                                Last
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
         </div>
 
     </main>
@@ -118,4 +247,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
