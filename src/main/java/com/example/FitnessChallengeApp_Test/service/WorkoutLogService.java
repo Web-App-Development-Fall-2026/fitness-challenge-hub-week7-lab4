@@ -4,6 +4,8 @@ import com.example.FitnessChallengeApp_Test.model.Challenge;
 import com.example.FitnessChallengeApp_Test.model.WorkoutLog;
 import com.example.FitnessChallengeApp_Test.repository.WorkoutLogRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
 import java.util.List;
@@ -18,6 +20,26 @@ public class WorkoutLogService {
 
     public WorkoutLogService(WorkoutLogRepository workoutLogRepository) {
         this.workoutLogRepository = workoutLogRepository;
+    }
+
+    public Page<WorkoutLog> getLogs(Pageable pageable) {
+        return workoutLogRepository.findAll(pageable);
+    }
+
+    public Page<WorkoutLog> findByAthleteNameContainingIgnoreCase(String athleteName, Pageable pageable) {
+        return workoutLogRepository.findByAthleteNameContainingIgnoreCase(athleteName, pageable);
+    }
+
+    public Page<WorkoutLog> findByCaloriesBurnedGreaterThanEqual(int minCalories, Pageable pageable) {
+        return workoutLogRepository.findByCaloriesBurnedGreaterThanEqual(minCalories, pageable);
+    }
+
+    public Page<WorkoutLog> findHighestCalorieLogs(Pageable pageable) {
+        return workoutLogRepository.findHighestCalorieLogs(pageable);
+    }
+
+    public Page<WorkoutLog> findLogsByIntensityAndMinDuration(String intensity, int minDuration, Pageable pageable) {
+        return workoutLogRepository.findLogsByIntensityAndMinDuration(intensity, minDuration, pageable);
     }
 
     public List<WorkoutLog> getAllLogs() {
