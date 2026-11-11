@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">FitSquad Hub - Log Workout Session</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Custom Application CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Reusable Navbar Fragment -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+
+                <!-- Header Banner -->
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-secondary-subtle text-secondary small mb-2">
+                        <span class="badge bg-warning text-dark rounded-pill">Athlete Activity</span>
+                        <span>@ManyToOne Challenge &bull; Bean Validation &bull; PRG Pattern</span>
+                    </div>
+                    <h1 class="display-6 fw-bold text-white tracking-tight">Log a <span class="text-gradient">Workout Session</span></h1>
+                    <p class="text-secondary small">Record your daily training effort, link it to an active challenge, and persist to the database.</p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="form-card">
+
+                    <!-- Global Validation Summary Banner -->
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger d-flex align-items-center gap-2 mb-4 rounded-3"
+                         th:if="${#fields.hasErrors('${workoutLog.*}')}">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <div>
+                            <strong>Workout log has validation errors.</strong> Please review the highlighted fields below.
+                        </div>
+                    </div>
+
+                    <form th:action="@{/log-workout}" th:object="${workoutLog}" method="post" novalidate>
+
+                        <!-- Athlete Name -->
+                        <div class="mb-3">
+                            <label for="athleteName" class="form-label text-white fw-semibold small">
+                                Athlete Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   id="athleteName"
+                                   class="form-control form-control-dark"
+                                   th:field="*{athleteName}"
+                                   th:classappend="${#fields.hasErrors('athleteName')} ? 'is-invalid' : ''"
+                                   placeholder="e.g., Alex Johnson">
+                            <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('athleteName')}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span th:errors="*{athleteName}">Athlete name is required</span>
+                            </div>
+                        </div>
+
+                        <!-- Challenge Selection (@ManyToOne) -->
+                        <div class="mb-3">
+                            <label for="challengeId" class="form-label text-white fw-semibold small">
+                                Associated Fitness Challenge <span class="text-danger">*</span>
+                            </label>
+                            <select id="challengeId"
+                                    class="form-select form-select-dark"
+                                    th:field="*{challenge.id}"
+                                    th:classappend="${#fields.hasErrors('challenge.id')} ? 'is-invalid' : ''">
+                                <option value="">-- Choose an Active Challenge --</option>
+                                <option th:each="c : ${challenges}"
+                                        th:value="${c.id}"
+                                        th:text="${c.title} + ' (' + ${c.category} + ' • ' + ${c.rewardPoints} + ' XP)'">
+                                    30-Day Core Crusher
+                                </option>
+                            </select>
+                            <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('challenge.id')}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span th:errors="*{challenge.id}">Please select an active challenge</span>
+                            </div>
+                        </div>
+
+                        <!-- Workout Date & Intensity Level -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="workoutDate" class="form-label text-white fw-semibold small">
+                                    Workout Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date"
+                                       id="workoutDate"
+                                       class="form-control form-control-dark"
+                                       th:field="*{workoutDate}"
+                                       th:classappend="${#fields.hasErrors('workoutDate')} ? 'is-invalid' : ''">
+                                <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('workoutDate')}">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span th:errors="*{workoutDate}">Workout date is required</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="intensityLevel" class="form-label text-white fw-semibold small">
+                                    Intensity Effort Level <span class="text-danger">*</span>
+                                </label>
+                                <select id="intensityLevel"
+                                        class="form-select form-select-dark"
+                                        th:field="*{intensityLevel}"
+                                        th:classappend="${#fields.hasErrors('intensityLevel')} ? 'is-invalid' : ''">
+                                    <option value="">-- Select Intensity --</option>
+                                    <option th:each="lvl : ${intensityLevels}"
+                                            th:value="${lvl}"
+                                            th:text="${lvl}">High</option>
+                                </select>
+                                <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('intensityLevel')}">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span th:errors="*{intensityLevel}">Please select an intensity level</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duration (Minutes) & Calories Burned -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="durationMinutes" class="form-label text-white fw-semibold small">
+                                    Duration (Minutes) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       id="durationMinutes"
+                                       class="form-control form-control-dark"
+                                       th:field="*{durationMinutes}"
+                                       th:classappend="${#fields.hasErrors('durationMinutes')} ? 'is-invalid' : ''"
+                                       placeholder="e.g., 35 (Min: 5, Max: 360)">
+                                <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('durationMinutes')}">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span th:errors="*{durationMinutes}">Workout duration is required</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="caloriesBurned" class="form-label text-white fw-semibold small">
+                                    Calories Burned (kcal) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       id="caloriesBurned"
+                                       class="form-control form-control-dark"
+                                       th:field="*{caloriesBurned}"
+                                       th:classappend="${#fields.hasErrors('caloriesBurned')} ? 'is-invalid' : ''"
+                                       placeholder="e.g., 320 (Min: 10, Max: 4000)">
+                                <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('caloriesBurned')}">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span th:errors="*{caloriesBurned}">Calories burned is required</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Session Notes -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label text-white fw-semibold small">
+                                Session Notes &amp; Reflections <span class="text-muted fw-normal">(Optional, Max 250 chars)</span>
+                            </label>
+                            <textarea id="notes"
+                                      rows="3"
+                                      class="form-control form-control-dark"
+                                      th:field="*{notes}"
+                                      th:classappend="${#fields.hasErrors('notes')} ? 'is-invalid' : ''"
+                                      placeholder="Share your sets, reps, pace, or personal milestones from today's session..."></textarea>
+                            <div class="invalid-feedback-custom" th:if="${#fields.hasErrors('notes')}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span th:errors="*{notes}">Workout notes cannot exceed 250 characters</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex align-items-center justify-content-end gap-3 pt-2">
+                            <a th:href="@{/workout-logs}" class="btn btn-outline-secondary rounded-pill px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-join rounded-pill px-4 py-2">
+                                <i class="bi bi-fire me-1"></i> Submit Workout Log
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Reusable Footer Fragment -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Bootstrap 5.3 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

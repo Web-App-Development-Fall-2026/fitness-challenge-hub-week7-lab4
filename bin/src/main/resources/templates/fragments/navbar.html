@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Reusable Navbar Fragment -->
+    <nav th:fragment="navbar" class="navbar navbar-expand-lg glass-nav sticky-top">
+        <div class="container py-1">
+            <a class="navbar-brand d-flex align-items-center gap-2 text-white fw-bold" th:href="@{/challenges}">
+                <span class="brand-logo-icon text-white">
+                    <i class="bi bi-lightning-charge-fill fs-5"></i>
+                </span>
+                <span class="fs-4 tracking-tight">FitSquad<span class="text-gradient">Hub</span></span>
+            </a>
+
+            <!-- Mobile toggler -->
+            <button class="navbar-toggler border-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-3 text-white"></i>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-lg-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill" th:href="@{/challenges}">
+                            <i class="bi bi-grid-fill me-1 text-primary"></i> Challenges
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill" th:href="@{/create-challenge}">
+                            <i class="bi bi-plus-circle-fill me-1 text-info"></i> Create Challenge
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill" th:href="@{/workout-logs}">
+                            <i class="bi bi-journal-check me-1 text-success"></i> Workout Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill" th:href="@{/log-workout}">
+                            <i class="bi bi-fire me-1 text-warning"></i> Log Workout
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill" th:href="@{/coaches}">
+                            <i class="bi bi-person-badge-fill me-1 text-danger"></i> Coaches
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+                    <span class="badge bg-dark-subtle border border-secondary-subtle px-3 py-2 rounded-pill text-light fw-normal">
+                        <i class="bi bi-database-fill-gear me-1 text-info"></i> CPAN-228 &bull; Spring Data JPA
+                    </span>
+                    <a th:href="@{/log-workout}" class="btn btn-sm btn-join rounded-pill px-3">
+                        <i class="bi bi-fire me-1"></i> Log Workout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+</body>
+</html>

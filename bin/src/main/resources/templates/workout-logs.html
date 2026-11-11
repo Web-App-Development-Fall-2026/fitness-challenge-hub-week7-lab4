@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">FitSquad Hub - Community Workout Logs</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Custom Application CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Reusable Navbar Fragment -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container my-5">
+
+        <!-- Header Banner -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+            <div>
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-secondary-subtle text-secondary small mb-2">
+                    <span class="badge bg-success rounded-pill">JPA Activity Feed</span>
+                    <span>@ManyToOne Challenge Join &bull; Lab Target View</span>
+                </div>
+                <h1 class="display-6 fw-bold text-white mb-1">Community <span class="text-gradient">Workout Logs</span></h1>
+                <p class="text-secondary small mb-0">
+                    Verified athlete training sessions persisted in H2 via <code class="text-info">WorkoutLogRepository</code>.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/log-workout}" class="btn btn-join rounded-pill px-4 py-2">
+                    <i class="bi bi-fire me-1"></i> Log New Workout
+                </a>
+                <a th:href="@{/challenges}" class="btn btn-outline-secondary rounded-pill px-3 py-2">
+                    Browse Quests
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty State Defense -->
+        <div th:if="${#lists.isEmpty(workoutLogs)}" class="alert alert-dark text-center py-5 rounded-4 border-secondary">
+            <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
+            <h4 class="text-white">No Workouts Logged Yet</h4>
+            <p class="text-secondary">Be the first squad member to complete a quest and log your training session!</p>
+            <a th:href="@{/log-workout}" class="btn btn-join rounded-pill px-4 mt-2">Log First Workout</a>
+        </div>
+
+        <!-- Workout Logs Table -->
+        <div th:unless="${#lists.isEmpty(workoutLogs)}" class="form-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead class="border-bottom border-secondary">
+                        <tr class="text-secondary small text-uppercase">
+                            <th scope="col" class="ps-4 py-3">Athlete</th>
+                            <th scope="col" class="py-3">Challenge (@ManyToOne)</th>
+                            <th scope="col" class="py-3">Date</th>
+                            <th scope="col" class="py-3">Duration</th>
+                            <th scope="col" class="py-3">Calories</th>
+                            <th scope="col" class="py-3">Intensity</th>
+                            <th scope="col" class="pe-4 py-3">Session Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log : ${workoutLogs}">
+                            <td class="ps-4 py-3">
+                                <div class="fw-bold text-white" th:text="${log.athleteName}">Alex Johnson</div>
+                            </td>
+                            <td class="py-3">
+                                <div class="fw-semibold text-info"
+                                     th:text="${log.challenge != null ? log.challenge.title : log.challengeTitle}">
+                                    30-Day Core Crusher
+                                </div>
+                                <div class="text-secondary small" th:if="${log.challenge != null && log.challenge.coach != null}">
+                                    Coach: <span th:text="${log.challenge.coach.name}">Marcus Vance</span>
+                                </div>
+                            </td>
+                            <td class="py-3 text-light small" th:text="${log.workoutDate}">2026-10-25</td>
+                            <td class="py-3">
+                                <span class="badge bg-dark border border-secondary text-light px-2 py-1"
+                                      th:text="${log.durationMinutes} + ' min'">30 min</span>
+                            </td>
+                            <td class="py-3">
+                                <span class="text-warning fw-bold" th:text="${log.caloriesBurned} + ' kcal'">320 kcal</span>
+                            </td>
+                            <td class="py-3">
+                                <span class="badge rounded-pill px-3 py-1"
+                                      th:classappend="${log.intensityLevel == 'Low' ? 'bg-info-subtle text-info' : (log.intensityLevel == 'Moderate' ? 'bg-success-subtle text-success' : (log.intensityLevel == 'High' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'))}"
+                                      th:text="${log.intensityLevel}">
+                                    High
+                                </span>
+                            </td>
+                            <td class="pe-4 py-3 text-secondary small" th:text="${log.notes}">
+                                Completed 4 sets of 90-second planks.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Reusable Footer Fragment -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Bootstrap 5.3 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
