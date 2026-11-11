@@ -33,66 +33,272 @@
                     <span class="badge bg-success rounded-pill">JPA Activity Feed</span>
                     <span>@ManyToOne Challenge Join &bull; Lab Target View</span>
                 </div>
-                <h1 class="display-6 fw-bold text-white mb-1">Community <span class="text-gradient">Workout Logs</span></h1>
+
+                <h1 class="display-6 fw-bold text-white mb-1">
+                    Community <span class="text-gradient">Workout Logs</span>
+                </h1>
+
                 <p class="text-secondary small mb-0">
-                    Verified athlete training sessions persisted in H2 via <code class="text-info">WorkoutLogRepository</code>.
+                    Verified athlete training sessions persisted in H2 via
+                    <code class="text-info">WorkoutLogRepository</code>.
                 </p>
             </div>
+
             <div class="d-flex gap-2">
                 <a th:href="@{/log-workout}" class="btn btn-join rounded-pill px-4 py-2">
                     <i class="bi bi-fire me-1"></i> Log New Workout
                 </a>
+
                 <a th:href="@{/challenges}" class="btn btn-outline-secondary rounded-pill px-3 py-2">
                     Browse Quests
                 </a>
             </div>
         </div>
 
+        <!-- Search and Filter Form -->
+        <div class="form-card p-4 mb-4">
+
+            <h5 class="text-white fw-bold mb-3">
+                <i class="bi bi-search me-2 text-info"></i>
+                Search & Filter Workout Logs
+            </h5>
+
+            <form th:action="@{/workout-logs}" method="get">
+
+                <!-- Preserve sorting and page size -->
+                <input type="hidden" name="sort" th:value="${sort}">
+                <input type="hidden" name="direction" th:value="${direction}">
+                <input type="hidden" name="size" th:value="${pageSize}">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Search Input -->
+                    <div class="col-md-5">
+                        <label for="search" class="form-label text-secondary">
+                            Search Keyword
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="search"
+                            name="search"
+                            th:value="${search}"
+                            placeholder="Athlete name, calories, or intensity...">
+                    </div>
+
+                    <!-- Filter Type -->
+                    <div class="col-md-4">
+                        <label for="filterType" class="form-label text-secondary">
+                            Filter By
+                        </label>
+
+                        <select class="form-select" id="filterType" name="filterType">
+
+                            <option value="all"
+                                    th:selected="${filterType == 'all'}">
+                                All Workout Logs
+                            </option>
+
+                            <option value="athlete"
+                                    th:selected="${filterType == 'athlete'}">
+                                By Athlete Name
+                            </option>
+
+                            <option value="calories"
+                                    th:selected="${filterType == 'calories'}">
+                                By Min Calories Burned
+                            </option>
+
+                            <option value="highestCalories"
+                                    th:selected="${filterType == 'highestCalories'}">
+                                Highest Calorie Burn - JPQL
+                            </option>
+
+                            <option value="intensityDuration"
+                                    th:selected="${filterType == 'intensityDuration'}">
+                                By Intensity & Min 25m Duration - JPQL
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <!-- Search and Reset Buttons -->
+                    <div class="col-md-3 d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-join rounded-pill px-3 flex-grow-1">
+                            <i class="bi bi-search me-1"></i> Search
+                        </button>
+
+                        <a th:href="@{/workout-logs}"
+                           class="btn btn-outline-secondary rounded-pill px-3">
+                            Reset
+                        </a>
+
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
         <!-- Empty State Defense -->
-        <div th:if="${#lists.isEmpty(workoutLogs)}" class="alert alert-dark text-center py-5 rounded-4 border-secondary">
+        <div th:if="${#lists.isEmpty(workoutLogs)}"
+             class="alert alert-dark text-center py-5 rounded-4 border-secondary">
+
             <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
-            <h4 class="text-white">No Workouts Logged Yet</h4>
-            <p class="text-secondary">Be the first squad member to complete a quest and log your training session!</p>
-            <a th:href="@{/log-workout}" class="btn btn-join rounded-pill px-4 mt-2">Log First Workout</a>
+
+            <h4 class="text-white">No Workouts Found</h4>
+
+            <p class="text-secondary">
+                No workout logs match your search or filter criteria.
+            </p>
+
+            <a th:href="@{/workout-logs}"
+               class="btn btn-outline-secondary rounded-pill px-4 mt-2">
+                Clear Filters
+            </a>
+
+            <a th:href="@{/log-workout}"
+               class="btn btn-join rounded-pill px-4 mt-2">
+                Log New Workout
+            </a>
         </div>
 
         <!-- Workout Logs Table -->
-        <div th:unless="${#lists.isEmpty(workoutLogs)}" class="form-card p-0 overflow-hidden">
+        <div th:unless="${#lists.isEmpty(workoutLogs)}"
+             class="form-card p-0 overflow-hidden">
+
             <div class="table-responsive">
+
                 <table class="table table-dark table-hover align-middle mb-0">
+
                     <thead class="border-bottom border-secondary">
                         <tr class="text-secondary small text-uppercase">
-                            <th scope="col" class="ps-4 py-3">Athlete</th>
-                            <th scope="col" class="py-3">Challenge (@ManyToOne)</th>
-                            <th scope="col" class="py-3">Date</th>
-                            <th scope="col" class="py-3">Duration</th>
-                            <th scope="col" class="py-3">Calories</th>
-                            <th scope="col" class="py-3">Intensity</th>
-                            <th scope="col" class="pe-4 py-3">Session Notes</th>
+
+                            <!-- Athlete Sort -->
+                            <th scope="col" class="ps-4 py-3">
+                                <a th:href="@{/workout-logs(page=0, size=${pageSize}, sort='athleteName', direction=${sort == 'athleteName' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}"
+                                   class="text-decoration-none text-secondary">
+
+                                    Athlete
+
+                                    <span th:if="${sort == 'athleteName'}"
+                                          th:text="${direction == 'ASC' ? '↑' : '↓'}">
+                                    </span>
+                                </a>
+                            </th>
+
+                            <th scope="col" class="py-3">
+                                Challenge (@ManyToOne)
+                            </th>
+
+                            <!-- Date Sort -->
+                            <th scope="col" class="py-3">
+                                <a th:href="@{/workout-logs(page=0, size=${pageSize}, sort='workoutDate', direction=${sort == 'workoutDate' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}"
+                                   class="text-decoration-none text-secondary">
+
+                                    Date
+
+                                    <span th:if="${sort == 'workoutDate'}"
+                                          th:text="${direction == 'ASC' ? '↑' : '↓'}">
+                                    </span>
+                                </a>
+                            </th>
+
+                            <!-- Duration Sort -->
+                            <th scope="col" class="py-3">
+                                <a th:href="@{/workout-logs(page=0, size=${pageSize}, sort='durationMinutes', direction=${sort == 'durationMinutes' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}"
+                                   class="text-decoration-none text-secondary">
+
+                                    Duration
+
+                                    <span th:if="${sort == 'durationMinutes'}"
+                                          th:text="${direction == 'ASC' ? '↑' : '↓'}">
+                                    </span>
+                                </a>
+                            </th>
+
+                            <!-- Calories Sort -->
+                            <th scope="col" class="py-3">
+                                <a th:href="@{/workout-logs(page=0, size=${pageSize}, sort='caloriesBurned', direction=${sort == 'caloriesBurned' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}"
+                                   class="text-decoration-none text-secondary">
+
+                                    Calories
+
+                                    <span th:if="${sort == 'caloriesBurned'}"
+                                          th:text="${direction == 'ASC' ? '↑' : '↓'}">
+                                    </span>
+                                </a>
+                            </th>
+
+                            <!-- Intensity Sort -->
+                            <th scope="col" class="py-3">
+                                <a th:href="@{/workout-logs(page=0, size=${pageSize}, sort='intensityLevel', direction=${sort == 'intensityLevel' and direction == 'ASC' ? 'DESC' : 'ASC'}, search=${search}, filterType=${filterType})}"
+                                   class="text-decoration-none text-secondary">
+
+                                    Intensity
+
+                                    <span th:if="${sort == 'intensityLevel'}"
+                                          th:text="${direction == 'ASC' ? '↑' : '↓'}">
+                                    </span>
+                                </a>
+                            </th>
+
+                            <th scope="col" class="pe-4 py-3">
+                                Session Notes
+                            </th>
+
                         </tr>
                     </thead>
+
                     <tbody>
+
                         <tr th:each="log : ${workoutLogs}">
+
                             <td class="ps-4 py-3">
-                                <div class="fw-bold text-white" th:text="${log.athleteName}">Alex Johnson</div>
+                                <div class="fw-bold text-white"
+                                     th:text="${log.athleteName}">
+                                    Alex Johnson
+                                </div>
                             </td>
+
                             <td class="py-3">
                                 <div class="fw-semibold text-info"
                                      th:text="${log.challenge != null ? log.challenge.title : log.challengeTitle}">
                                     30-Day Core Crusher
                                 </div>
-                                <div class="text-secondary small" th:if="${log.challenge != null && log.challenge.coach != null}">
-                                    Coach: <span th:text="${log.challenge.coach.name}">Marcus Vance</span>
+
+                                <div class="text-secondary small"
+                                     th:if="${log.challenge != null && log.challenge.coach != null}">
+
+                                    Coach:
+                                    <span th:text="${log.challenge.coach.name}">
+                                        Marcus Vance
+                                    </span>
+
                                 </div>
                             </td>
-                            <td class="py-3 text-light small" th:text="${log.workoutDate}">2026-10-25</td>
+
+                            <td class="py-3 text-light small"
+                                th:text="${log.workoutDate}">
+                                2026-10-25
+                            </td>
+
                             <td class="py-3">
                                 <span class="badge bg-dark border border-secondary text-light px-2 py-1"
-                                      th:text="${log.durationMinutes} + ' min'">30 min</span>
+                                      th:text="${log.durationMinutes} + ' min'">
+                                    30 min
+                                </span>
                             </td>
+
                             <td class="py-3">
-                                <span class="text-warning fw-bold" th:text="${log.caloriesBurned} + ' kcal'">320 kcal</span>
+                                <span class="text-warning fw-bold"
+                                      th:text="${log.caloriesBurned} + ' kcal'">
+                                    320 kcal
+                                </span>
                             </td>
+
                             <td class="py-3">
                                 <span class="badge rounded-pill px-3 py-1"
                                       th:classappend="${log.intensityLevel == 'Low' ? 'bg-info-subtle text-info' : (log.intensityLevel == 'Moderate' ? 'bg-success-subtle text-success' : (log.intensityLevel == 'High' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'))}"
@@ -100,12 +306,119 @@
                                     High
                                 </span>
                             </td>
-                            <td class="pe-4 py-3 text-secondary small" th:text="${log.notes}">
+
+                            <td class="pe-4 py-3 text-secondary small"
+                                th:text="${log.notes}">
                                 Completed 4 sets of 90-second planks.
                             </td>
+
                         </tr>
+
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4 border-top border-secondary">
+
+                <!-- Pagination Information -->
+                <div class="text-secondary small">
+
+                    Page
+                    <span class="text-white fw-bold"
+                          th:text="${currentPage + 1}">
+                        1
+                    </span>
+
+                    of
+
+                    <span class="text-white fw-bold"
+                          th:text="${totalPages}">
+                        5
+                    </span>
+
+                    (<span class="text-info fw-bold"
+                           th:text="${totalElements}">
+                        25
+                    </span>
+                    total workout logs)
+
+                </div>
+
+                <!-- Bootstrap Pagination -->
+                <nav aria-label="Workout logs pagination"
+                     th:if="${totalPages > 0}">
+
+                    <ul class="pagination pagination-sm mb-0">
+
+                        <!-- First Page -->
+                        <li class="page-item"
+                            th:classappend="${!hasPrevious ? 'disabled' : ''}">
+
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=0, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               aria-label="First">
+
+                                <i class="bi bi-chevron-double-left"></i>
+                                First
+                            </a>
+                        </li>
+
+                        <!-- Previous Page -->
+                        <li class="page-item"
+                            th:classappend="${!hasPrevious ? 'disabled' : ''}">
+
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${currentPage - 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               aria-label="Previous">
+
+                                <i class="bi bi-chevron-left"></i>
+                                Previous
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers -->
+                        <li class="page-item"
+                            th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${pageNumber}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               th:text="${pageNumber + 1}">
+                                1
+                            </a>
+
+                        </li>
+
+                        <!-- Next Page -->
+                        <li class="page-item"
+                            th:classappend="${!hasNext ? 'disabled' : ''}">
+
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${currentPage + 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               aria-label="Next">
+
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+
+                        <!-- Last Page -->
+                        <li class="page-item"
+                            th:classappend="${!hasNext ? 'disabled' : ''}">
+
+                            <a class="page-link"
+                               th:href="@{/workout-logs(page=${totalPages - 1}, size=${pageSize}, sort=${sort}, direction=${direction}, search=${search}, filterType=${filterType})}"
+                               aria-label="Last">
+
+                                Last
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+
             </div>
         </div>
 
@@ -118,4 +431,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
