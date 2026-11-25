@@ -11,6 +11,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.List;
 
 /**
  * Controller for Athlete Workout Logging.
@@ -27,6 +33,67 @@ public class WorkoutLogController {
     public WorkoutLogController(WorkoutLogService workoutLogService, ChallengeService challengeService) {
         this.workoutLogService = workoutLogService;
         this.challengeService = challengeService;
+    }
+
+    @GetMapping("/workout-logs")
+    public String showWorkoutLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "all") String filterType,
+            Model model
+    ) {
+        // Only allow sorting by known fields; anything else falls back to id
+        List<String> allowedSorts = List.of("id", "athleteName", "workoutDate",
+                "durationMinutes", "caloriesBurned", "intensityLevel");
+        if (!allowedSorts.contains(sort)) {
+            sort = "id";
+        }
+
+        Sort.Direction sortDir = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sort));
+
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        Page<WorkoutLog> logPage;
+
+        if ("athlete".equalsIgnoreCase(filterType) && hasSearch) {
+            logPage = workoutLogService.searchByAthleteName(search.trim(), pageable);
+        } else if ("calories".equalsIgnoreCase(filterType)) {
+            int minCalories = 200;
+            if (hasSearch) {
+                try {
+                    minCalories = Integer.parseInt(search.trim());
+                } catch (NumberFormatException e) {
+                    // Keep default threshold if the input is not a valid integer
+                }
+            }
+            logPage = workoutLogService.searchByMinCalories(minCalories, pageable);
+        } else if ("highestCalories".equalsIgnoreCase(filterType)) {
+            logPage = workoutLogService.searchHighestCalorieLogs(pageable);
+        } else if ("intensityDuration".equalsIgnoreCase(filterType) && hasSearch) {
+            logPage = workoutLogService.searchByIntensityAndMinDuration(search.trim(), 25, pageable);
+        } else {
+            logPage = workoutLogService.getLogs(pageable);
+        }
+
+        model.addAttribute("pageTitle", "FitSquad Hub - Community Workout Logs");
+
+        model.addAttribute("workoutLogs", logPage.getContent());
+        model.addAttribute("totalPages", logPage.getTotalPages());
+        model.addAttribute("totalElements", logPage.getTotalElements());
+        model.addAttribute("pageSize", size);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasPrevious", logPage.hasPrevious());
+        model.addAttribute("hasNext", logPage.hasNext());
+
+        model.addAttribute("search", search);
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
+        model.addAttribute("filterType", filterType);
+
+        return "workout-logs";
     }
 
     @GetMapping("/log-workout")
@@ -65,13 +132,6 @@ public class WorkoutLogController {
 
         workoutLogService.addLog(workoutLog, selectedChallenge);
         return "redirect:/workout-logs";
-    }
-
-    @GetMapping("/workout-logs")
-    public String showWorkoutLogs(Model model) {
-        model.addAttribute("workoutLogs", workoutLogService.getAllLogs());
-        model.addAttribute("pageTitle", "FitSquad Hub - Community Workout Logs");
-        return "workout-logs";
     }
 }
 

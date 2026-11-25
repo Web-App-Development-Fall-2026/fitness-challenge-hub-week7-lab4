@@ -1,5 +1,8 @@
 package com.example.FitnessChallengeApp_Test.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.example.FitnessChallengeApp_Test.model.Challenge;
 import com.example.FitnessChallengeApp_Test.model.WorkoutLog;
 import com.example.FitnessChallengeApp_Test.repository.WorkoutLogRepository;
@@ -46,6 +49,27 @@ public class WorkoutLogService {
 
     public WorkoutLog addLog(WorkoutLog log) {
         return addLog(log, log.getChallenge());
+    }
+
+    // Paginated & custom query methods
+    public Page<WorkoutLog> getLogs(Pageable pageable) {
+        return workoutLogRepository.findAll(pageable);
+    }
+
+    public Page<WorkoutLog> searchByAthleteName(String athleteName, Pageable pageable) {
+        return workoutLogRepository.findByAthleteNameContainingIgnoreCase(athleteName, pageable);
+    }
+
+    public Page<WorkoutLog> searchByMinCalories(int minCalories, Pageable pageable) {
+        return workoutLogRepository.findByCaloriesBurnedGreaterThanEqual(minCalories, pageable);
+    }
+
+    public Page<WorkoutLog> searchHighestCalorieLogs(Pageable pageable) {
+        return workoutLogRepository.findHighestCalorieLogs(pageable);
+    }
+
+    public Page<WorkoutLog> searchByIntensityAndMinDuration(String intensity, int minDuration, Pageable pageable) {
+        return workoutLogRepository.findLogsByIntensityAndMinDuration(intensity, minDuration, pageable);
     }
 
     public List<String> getIntensityLevels() {
