@@ -3,14 +3,13 @@ package com.example.FitnessChallengeApp_Test.service;
 import com.example.FitnessChallengeApp_Test.model.Challenge;
 import com.example.FitnessChallengeApp_Test.model.WorkoutLog;
 import com.example.FitnessChallengeApp_Test.repository.WorkoutLogRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 
-/**
- * Service managing Spring Data JPA persistence for Athlete Workout Logs.
- */
 @Service
 public class WorkoutLogService {
 
@@ -22,6 +21,32 @@ public class WorkoutLogService {
 
     public List<WorkoutLog> getAllLogs() {
         return workoutLogRepository.findAll();
+    }
+
+    public Page<WorkoutLog> getLogs(Pageable pageable) {
+        return workoutLogRepository.findAll(pageable);
+    }
+
+    public Page<WorkoutLog> findByAthleteNameContainingIgnoreCase(
+            String athleteName, Pageable pageable) {
+        return workoutLogRepository.findByAthleteNameContainingIgnoreCase(
+                athleteName, pageable);
+    }
+
+    public Page<WorkoutLog> findByCaloriesBurnedGreaterThanEqual(
+            int minCalories, Pageable pageable) {
+        return workoutLogRepository.findByCaloriesBurnedGreaterThanEqual(
+                minCalories, pageable);
+    }
+
+    public Page<WorkoutLog> findHighestCalorieLogs(Pageable pageable) {
+        return workoutLogRepository.findHighestCalorieLogs(pageable);
+    }
+
+    public Page<WorkoutLog> findLogsByIntensityAndMinDuration(
+            String intensity, int minDuration, Pageable pageable) {
+        return workoutLogRepository.findLogsByIntensityAndMinDuration(
+                intensity, minDuration, pageable);
     }
 
     public WorkoutLog getLogById(Long id) {
@@ -38,9 +63,11 @@ public class WorkoutLogService {
         } else if (log.getChallenge() != null && log.getChallenge().getTitle() != null) {
             log.setChallengeTitle(log.getChallenge().getTitle());
         }
+
         if (log.getCreatedAt() == null) {
             log.setCreatedAt(new Date());
         }
+
         return workoutLogRepository.save(log);
     }
 
@@ -52,4 +79,3 @@ public class WorkoutLogService {
         return List.of("Low", "Moderate", "High", "Extreme");
     }
 }
-
